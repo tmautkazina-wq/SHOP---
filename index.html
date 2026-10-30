@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHOP — Интернет-магазин</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <a class="logo" href="#">SHOP<span>.</span></a>
+    <nav>
+        <a href="#home">Главная</a>
+        <a href="#catalog">Каталог</a>
+        <a href="#" onclick="openCart()">Корзина 🛒 <span id="cartCount">0</span></a>
+        <a href="#" onclick="openAccount()">Профиль</a>
+    </nav>
+    <button class="dark-btn" id="authButton" onclick="openAuth()">Войти</button>
+</header>
+
+<section class="hero" id="home">
+    <div>
+        <span class="tag">НОВАЯ КОЛЛЕКЦИЯ</span>
+        <h1>Покупки,<br>которые радуют.</h1>
+        <p>Открой для себя лучшие товары по доступным ценам.</p>
+        <a href="#catalog" class="btn">Смотреть товары</a>
+    </div>
+</section>
+
+<section class="catalog" id="catalog">
+    <div class="section-title">
+        <div>
+            <span class="tag">НАШ МАГАЗИН</span>
+            <h2>Популярные товары</h2>
+        </div>
+        <input id="search" placeholder="Поиск товаров..." oninput="renderProducts()">
+    </div>
+    <div class="products" id="products"></div>
+</section>
+
+<section id="panel" class="panel hidden">
+    <button class="close" onclick="closePanel()">✕</button>
+    <div id="panelContent"></div>
+</section>
+
+<footer>
+    <h2>SHOP.</h2>
+    <p>© 2026 SHOP. Все права защищены.</p>
+</footer>
+
+<script>
+const initialProducts = [
+ {id:1,name:"Наушники Pro",price:15990,category:"Электроника",image:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600"},
+ {id:2,name:"Смарт-часы",price:24990,category:"Электроника",image:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"},
+ {id:3,name:"Кроссовки",price:29990,category:"Одежда",image:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600"},
+ {id:4,name:"Рюкзак",price:18990,category:"Аксессуары",image:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600"},
+ {id:5,name:"Фотоаппарат",price:59990,category:"Электроника",image:"https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600"},
+ {id:6,name:"Очки",price:9990,category:"Аксессуары",image:"https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600"}
+];
+
+function read(key, fallback) {
+ try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+ catch { return fallback; }
+}
+
+let products = read("shopProducts", initialProducts);
+let users = read("shopUsers", []);
+let cart = read("shopCart", []);
+let orders = read("shopOrders", []);
+let currentUser = read("shopCurrentUser", null);
+
+function save() {
+ localStorage.setItem("shopProducts",JSON.stringify(products));
+ localStorage.setItem("shopUsers",JSON.stringify(users));
+ localStorage.setItem("shopCart",JSON.stringify(cart));
+ localStorage.setItem("shopOrders",JSON.stringify(orders));
+ localStorage.setItem("shopCurrentUser",JSON.stringify(currentUser));
+}
+
+function money(value) {
+ return Number(value).toLocaleString("ru-RU")+" ₸";
+}
+
+function renderProducts() {
+ const search = document.getElementById("search").value.toLowerCase();
+ const list = document.getElementById("products");
+
+ list.innerHTML = products.filter(p =>
+ p.name.toLowerCase().includes(search) ||
+ p.category.toLowerCase().includes(search)
+ ).map(p => `
+ <article class="product">
+ <img src="${p.image}" alt="${escapeHTML(p.name)}">
+ <div class="product-info">
+ <small>${escapeHTML(p.category)}</small>
+ <h3>${escapeHTML(p.name)}</h3>
+ <strong>${money(p.price)}</strong>
+ <button class="btn" onclick="addToCart(${p.id})">В корзину</button>
+ </div>
+ </article>
+ `).join("") || "<p>Товары не найдены.</p>";
+}
+
+function escapeHTML(value) {
+ return String(value).replace(/[&<>"']/g, c => ({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+function updateHeader() {
+ document.getElementById("cartCount").textContent =
+ cart.reduce((sum,p)=>sum+p.quantity,0);
+
+ const button = document.getElementById("authButton");
+ button.textContent = currentUser ? currentUser.name : "Войти";
+}
+
+function addToCart(id) {
+ const p = products.find(x=>x.id===id);
+ if (!p) return;
+
+ const item = cart.find(x=>x.id===id);
+ if(item) item.quantity++;
+ else cart.push({id,quantity:1});
+
+ save();
+ updateHeader();
+ alert("Товар добавлен в корзину!");
+}
+
+function showPanel(html) {
+ document.getElementById("panelContent").innerHTML=html;
+ document.getElementById("panel").classList.remove("hidden");
+ document.getElementById("panel").scrollIntoView({behavior:"smooth"});
+}
+
+function closePanel() {
+ document.getElementById("panel").classList.add("hidden");
+}
+
+function openAuth() {
+ if(currentUser) return openAccount();
+
+ showPanel(`
+ <h2>Вход в аккаунт</h2>
+ <form onsubmit="login(event)">
+ <input id="email" type="email" placeholder="Email" required>
+ <input id="password" type="password" placeholder="Пароль" required>
+ <button class="btn">Войти</button>
+ </form>
+ <p>Нет аккаунта? <a href="#" onclick="registerForm()">Регистрация</a></p>
+ <p><a href="#" onclick="forgotForm()">Забыли пароль?</a></p>
+ `);
+}
+
+function registerForm() {
+ showPanel(`
+ <h2>Регистрация</h2>
+ <form onsubmit="register(event)">
+ <input id="name" placeholder="Ваше имя" required maxlength="50">
+ <input id="email" type="email" placeholder="Email" required>
+ <input id="password" type="password" placeholder="Пароль (минимум 8 символов)" minlength="8" required>
+ <button class="btn">Создать аккаунт</button>
+ </form>
+ <p>Уже есть аккаунт? <a href="#" onclick="openAuth()">Войти</a></p>
+ `);
+}
+
+function register(e) {
+ e.preventDefault();
+
+ const name=document.getElementById("name").value.trim();
+ const email=document.getElementById("email").value.trim().toLowerCase();
+ const password=document.getElementById("password").value;
+
+ if(users.some(u=>u.email===email)) {
+ alert("Этот Email уже зарегистрирован!");
+ return;
+ }
+
+ users.push({id:Date.now(),name,email,password,role:"user"});
+ save();
+ alert("Регистрация успешна!");
+ openAuth();
+}
+
+function login(e) {
+ e.preventDefault();
+
+ const email=document.getElementById("email").value.trim().toLowerCase();
+ const password=document.getElementById("password").value;
+
+ const user=users.find(u=>u.email===email&&u.password===password);
+
+ if(!user) {
+ alert("Неверный Email или пароль!");
+ return;
+ }
+
+ currentUser={id:user.id,name:user.name,email:user.email,role:user.role};
+ save();
+ updateHeader();
+ openAccount();
+}
+
+function logout() {
+ currentUser=null;
+ save();
+ updateHeader();
+ closePanel();
+}
+
+function openAccount() {
+ if(!currentUser) return openAuth();
+
+ const myOrders=orders.filter(o=>o.userId===currentUser.id);
+
+ showPanel(`
+ <h2>Личный кабинет</h2>
+ <div class="profile">
+ <h3>Здравствуйте, ${escapeHTML(currentUser.name)}!</h3>
+ <p>Email: ${escapeHTML(currentUser.email)}</p>
+ <p>Роль: ${currentUser.role==="admin"?"Администратор":"Покупатель"}</p>
+ </div>
+ <h3>Мои заказы</h3>
+ ${myOrders.map(o=>`
+ <div class="order">
+ Заказ №${o.id}<br>
+ Сумма: ${money(o.total)}<br>
+ Статус: ${escapeHTML(o.status)}
+ </div>
+ `).join("") || "<p>Заказов пока нет.</p>"}
+ ${currentUser.role==="admin" ? '<button class="btn" onclick="openAdmin()">Админ-панель</button>' : ""}
+ <button class="btn danger" onclick="logout()">Выйти</button>
+ `);
+}
+
+function openCart() {
+ let total=0;
+
+ const items=cart.map(item=>{
+ const p=products.find(x=>x.id===item.id);
+ if(!p) return "";
+ const sum=p.price*item.quantity;
+ total+=sum;
+
+ return `
+ <div class="cart-item">
+ <span>${escapeHTML(p.name)} × ${item.quantity}</span>
+ <strong>${money(sum)}</strong>
+ <button onclick="removeCart(${p.id})">Удалить</button>
+ </div>`;
+ }).join("");
+
+ showPanel(`
+ <h2>Корзина</h2>
+ ${items || "<p>Корзина пуста.</p>"}
+ <h3>Итого: ${money(total)}</h3>
+ ${cart.length ? '<button class="btn" onclick="checkout()">Оформить заказ</button>' : ""}
+ `);
+}
+
+function removeCart(id) {
+ cart=cart.filter(x=>x.id!==id);
+ save();
+ updateHeader();
+ openCart();
+}
+
+function checkout() {
+ if(!currentUser) {
+ alert("Сначала войдите в аккаунт!");
+ return openAuth();
+ }
+
+ if(!cart.length) return;
+
+ const total=cart.reduce((sum,item)=>{
+ const p=products.find(x=>x.id===item.id);
+ return sum+(p?p.price*item.quantity:0);
+ },0);
+
+ showPanel(`
+ <h2>Оформление заказа</h2>
+ <form onsubmit="placeOrder(event)">
+ <input id="address" placeholder="Адрес доставки" required maxlength="300">
+ <h3>К оплате: ${money(total)}</h3>
+ <button class="btn">Подтвердить заказ</button>
+ </form>
+ `);
+}
+
+function placeOrder(e) {
+ e.preventDefault();
+
+ const address=document.getElementById("address").value.trim();
+ if(!address) return;
+
+ const items=cart.map(item=>{
+ const p=products.find(x=>x.id===item.id);
+ return p ? {name:p.name,price:p.price,quantity:item.quantity} : null;
+ }).filter(Boolean);
+
+ if(!items.length) return;
+
+ const total=items.reduce((s,p)=>s+p.price*p.quantity,0);
+
+ orders.push({
+ id:Date.now(),
+ userId:currentUser.id,
+ items,
+ total,
+ address,
+ status:"Новый"
+ });
+
+ cart=[];
+ save();
+ updateHeader();
+ alert("Заказ успешно оформлен!");
+ openAccount();
+}
+
+function forgotForm() {
+ showPanel(`
+ <h2>Восстановление пароля</h2>
+ <p>В демонстрационной версии восстановление выполняется через подтверждение email не реализовано.</p>
+ <p>Для настоящего восстановления понадобится сервер и почтовый сервис.</p>
+ `);
+}
+
+function openAdmin() {
+ if(!currentUser || currentUser.role!=="admin") return;
+
+ showPanel(`
+ <h2>Админ-панель</h2>
+ <h3>Добавить товар</h3>
+ <form onsubmit="addProduct(event)">
+ <input id="pname" placeholder="Название" required>
+ <input id="pprice" type="number" min="1" placeholder="Цена" required>
+ <input id="pimage" type="url" placeholder="Ссылка на фото" required>
+ <input id="pcategory" placeholder="Категория" required>
+ <button class="btn">Добавить</button>
+ </form>
+ <h3>Товары</h3>
+ ${products.map(p=>`
+ <div class="cart-item">
+ <span>${escapeHTML(p.name)} — ${money(p.price)}</span>
+ <button onclick="deleteProduct(${p.id})">Удалить</button>
+ </div>`).join("")}
+ <h3>Все заказы</h3>
+ ${orders.map(o=>`
+ <div class="order">
+ Заказ №${o.id}<br>
+ ${money(o.total)}<br>
+ Адрес: ${escapeHTML(o.address)}<br>
+ <select onchange="changeStatus(${o.id},this.value)">
+ ${["Новый","В обработке","Отправлен","Завершён","Отменён"].map(s=>
+ `<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
+ </select>
+ </div>`).join("") || "<p>Заказов нет.</p>"}
+ `);
+}
+
+function addProduct(e) {
+ e.preventDefault();
+ if(currentUser?.role!=="admin") return;
+
+ products.push({
+ id:Date.now(),
+ name:document.getElementById("pname").value.trim(),
+ price:Number(document.getElementById("pprice").value),
+ image:document.getElementById("pimage").value,
+ category:document.getElementById("pcategory").value.trim()
+ });
+
+ save();
+ renderProducts();
+ openAdmin();
+}
+
+function deleteProduct(id) {
+ if(currentUser?.role!=="admin") return;
+ products=products.filter(p=>p.id!==id);
+ cart=cart.filter(p=>p.id!==id);
+ save();
+ renderProducts();
+ updateHeader();
+ openAdmin();
+}
+
+function changeStatus(id,status) {
+ if(currentUser?.role!=="admin") return;
+ const order=orders.find(o=>o.id===id);
+ if(order) order.status=status;
+ save();
+}
+
+renderProducts();
+updateHeader();
+</script>
+</body>
+</html>
