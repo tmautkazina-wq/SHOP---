@@ -1,0 +1,300 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+header {
+    height: 80px;
+    padding: 0 7%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: #d9a441;
+}
+
+nav {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+nav a:hover {
+    color: #d9a441;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font: inherit;
+}
+
+.dark-btn {
+    background: #222;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 7px;
+}
+
+.hero {
+    min-height: 450px;
+    background: #f5f5f2;
+    padding: 70px 10%;
+    display: flex;
+    align-items: center;
+}
+
+.tag {
+    color: #b68b3b;
+    font-size: 12px;
+    letter-spacing: 3px;
+    font-weight: bold;
+}
+
+.hero h1 {
+    font-size: clamp(40px, 6vw, 65px);
+    margin: 22px 0;
+    line-height: 1.1;
+}
+
+.hero p {
+    color: #777;
+    margin-bottom: 30px;
+}
+
+.btn, .main-btn {
+    display: inline-block;
+    background: #222;
+    color: white;
+    padding: 14px 25px;
+    border-radius: 7px;
+    margin-top: 12px;
+}
+
+.btn:hover, .main-btn:hover, .dark-btn:hover {
+    background: #b68b3b;
+}
+
+.catalog {
+    padding: 75px 7%;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 35px;
+}
+
+.section-title h2 {
+    margin-top: 12px;
+    font-size: 32px;
+}
+
+.section-title input {
+    padding: 13px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-width: 250px;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+}
+
+.product {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: .3s;
+}
+
+.product:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px #00000010;
+}
+
+.product img {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-info small {
+    color: #999;
+}
+
+.product-info h3 {
+    margin: 12px 0;
+}
+
+.product-info strong {
+    display: block;
+    font-size: 20px;
+}
+
+.product-info button {
+    width: 100%;
+}
+
+.panel {
+    position: relative;
+    max-width: 650px;
+    margin: 35px auto;
+    padding: 35px;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    box-shadow: 0 10px 35px #0000000c;
+}
+
+.panel h2 {
+    margin-bottom: 20px;
+}
+
+.panel h3 {
+    margin: 20px 0 10px;
+}
+
+.panel p {
+    margin: 12px 0;
+}
+
+.panel input {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+}
+
+.panel form .btn {
+    width: 100%;
+}
+
+.panel a {
+    color: #b68b3b;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    background: transparent;
+    font-size: 22px;
+}
+
+.hidden {
+    display: none;
+}
+
+.cart-item, .order, .profile {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.cart-item button {
+    color: #d33;
+    background: transparent;
+}
+
+.order {
+    display: block;
+}
+
+.panel select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+}
+
+.danger {
+    background: #c33;
+}
+
+footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 40px;
+    margin-top: 60px;
+}
+
+footer p {
+    margin-top: 12px;
+    color: #aaa;
+}
+
+@media(max-width: 700px) {
+    header {
+        height: auto;
+        padding: 20px;
+        flex-wrap: wrap;
+    }
+
+    nav {
+        order: 3;
+        width: 100%;
+        gap: 15px;
+        font-size: 13px;
+    }
+
+    .hero {
+        padding: 55px 7%;
+    }
+
+    .section-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .section-title input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .catalog {
+        padding: 45px 5%;
+    }
+
+    .panel {
+        margin: 20px 12px;
+        padding: 25px 18px;
+    }
+}
